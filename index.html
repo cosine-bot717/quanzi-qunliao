@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>圈子管理 - 群聊</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif; font-size:14px; color:#333; background:#f5f6fa; min-height:100vh; }
+
+/* 顶部 */
+.topbar { height:48px; background:#fff; border-bottom:1px solid #e4e6eb; display:flex; align-items:center; padding:0 20px; position:fixed; top:0; left:0; right:0; z-index:200; box-shadow:0 1px 4px rgba(0,0,0,.05); }
+.brand { display:flex; align-items:center; gap:8px; margin-right:28px; }
+.brand-icon { width:26px; height:26px; border-radius:6px; background:#1677ff; color:#fff; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.brand-name { font-size:13px; color:#555; white-space:nowrap; max-width:130px; overflow:hidden; text-overflow:ellipsis; }
+.top-nav { display:flex; align-items:stretch; height:48px; }
+.top-nav a { display:flex; align-items:center; padding:0 12px; font-size:14px; color:#555; text-decoration:none; border-bottom:2px solid transparent; transition:all .15s; }
+.top-nav a:hover { color:#1677ff; }
+.top-nav a.active { color:#1677ff; border-bottom-color:#1677ff; font-weight:500; }
+.top-right { margin-left:auto; display:flex; align-items:center; gap:16px; }
+.ai-btn { display:flex; align-items:center; gap:5px; background:#f0f7ff; color:#1677ff; padding:5px 12px; border-radius:4px; font-size:13px; cursor:pointer; border:1px solid #bae0ff; }
+.u-av { width:28px; height:28px; border-radius:50%; background:#ff7a45; color:#fff; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:500; }
+
+/* 左侧一级 */
+.sl { width:156px; background:#fff; border-right:1px solid #e4e6eb; position:fixed; top:48px; bottom:0; left:0; overflow-y:auto; padding:10px 0; }
+.sl-group { padding:10px 16px 4px; font-size:12px; color:#aaa; font-weight:500; display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+.sl-item { display:flex; align-items:center; gap:6px; padding:7px 16px 7px 24px; font-size:13px; color:#555; cursor:pointer; text-decoration:none; transition:all .12s; white-space:nowrap; }
+.sl-item:hover { color:#1677ff; background:#f0f5ff; }
+.sl-item.active { color:#1677ff; background:#e8f0fe; font-weight:500; }
+.sl-item .rdot { width:6px; height:6px; border-radius:50%; background:#ff4d4f; display:inline-block; margin-left:2px; }
+.sl-div { height:1px; background:#f0f0f0; margin:6px 0; }
+
+/* 左侧二级 */
+.sr { width:88px; background:#fff; border-right:1px solid #e4e6eb; position:fixed; top:48px; bottom:0; left:156px; overflow-y:auto; padding:8px 0; }
+.sr-item { display:block; padding:8px 12px; font-size:13px; color:#555; cursor:pointer; text-decoration:none; white-space:nowrap; transition:all .12s; }
+.sr-item:hover { color:#1677ff; background:#f0f5ff; }
+.sr-item.active { color:#1677ff; background:#e8f0fe; font-weight:500; border-right:2px solid #1677ff; }
+.sr-item .bnew { font-size:10px; background:#ff4d4f; color:#fff; padding:0 4px; border-radius:8px; margin-left:3px; vertical-align:1px; }
+.sr-item .bdot { width:6px; height:6px; border-radius:50%; background:#ff4d4f; display:inline-block; margin-left:3px; vertical-align:2px; }
+.sr-div { height:1px; background:#f0f0f0; margin:4px 8px; }
+
+/* 主内容 */
+.main { margin-left:244px; margin-top:48px; }
+
+/* 面包屑 */
+.bc { padding:9px 24px; font-size:13px; color:#999; background:#fff; border-bottom:1px solid #eee; display:flex; align-items:center; gap:5px; }
+.bc a { color:#999; text-decoration:none; cursor:pointer; }
+.bc a:hover { color:#1677ff; }
+.bc .sep { color:#ddd; }
+.bc .cur { color:#555; }
+
+/* 圈子头 */
+.ch { padding:14px 24px; background:#fff; display:flex; align-items:center; gap:16px; border-bottom:1px solid #eee; }
+.ch-cover { width:72px; height:54px; border-radius:6px; background:linear-gradient(135deg,#a8edea,#fed6e3); flex-shrink:0; }
+.ch-info h2 { font-size:17px; font-weight:500; color:#222; margin-bottom:5px; }
+.ch-info .meta { font-size:13px; color:#999; display:flex; align-items:center; gap:14px; }
+.online { color:#52c41a; display:flex; align-items:center; gap:4px; }
+.online::before { content:''; width:6px; height:6px; border-radius:50%; background:#52c41a; flex-shrink:0; }
+.ch-acts { margin-left:auto; display:flex; gap:8px; }
+
+/* 按钮 */
+.btn { padding:5px 14px; border-radius:4px; font-size:13px; cursor:pointer; border:1px solid #d9d9d9; background:#fff; color:#555; display:inline-flex; align-items:center; gap:5px; transition:all .15s; line-height:1.5; white-space:nowrap; }
+.btn:hover { border-color:#1677ff; color:#1677ff; }
+.btn-p { background:#1677ff; color:#fff !important; border-color:#1677ff; }
+.btn-p:hover { background:#4096ff; border-color:#4096ff; }
+.btn-d { color:#ff4d4f !important; }
+.btn-d:hover { border-color:#ff4d4f; }
+
+/* 内容体 */
+.body { padding:16px 24px; }
+
+/* ════════════════════════════════
+   第一层：群聊列表
+   ════════════════════════════════ */
+#view-list { display:block; }
+#view-detail { display:none; }
+
+.list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.list-header h3 { font-size:15px; font-weight:500; color:#222; }
+
+.group-list { display:flex; flex-direction:column; gap:10px; }
+.group-card { background:#fff; border:1px solid #e4e6eb; border-radius:4px; padding:16px 20px; display:flex; align-items:center; gap:16px; transition:box-shadow .15s; }
+.group-card:hover { box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.group-card-icon { width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.group-card-info { flex:1; min-width:0; }
+.group-card-info .gname { font-size:14px; font-weight:500; color:#222; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+.group-card-info .gmeta { font-size:13px; color:#999; display:flex; align-items:center; gap:16px; }
+.group-status-on { color:#52c41a; font-size:12px; display:flex; align-items:center; gap:4px; }
+.group-status-on::before { content:''; width:5px; height:5px; border-radius:50%; background:#52c41a; }
+.group-status-off { color:#aaa; font-size:12px; display:flex; align-items:center; gap:4px; }
+.group-status-off::before { content:''; width:5px; height:5px; border-radius:50%; background:#aaa; }
+
+.group-card-acts { display:flex; gap:8px; flex-shrink:0; }
+
+/* 空态 */
+.empty-tip { text-align:center; padding:48px 0; color:#aaa; font-size:13px; }
+
+/* ════════════════════════════════
+   第二层：群聊详情
+   ════════════════════════════════ */
+.subtabs { background:#fff; border-bottom:1px solid #e4e6eb; padding:0 24px; display:flex; }
+.stab { padding:12px 0; margin-right:28px; font-size:14px; color:#666; cursor:pointer; border-bottom:2px solid transparent; transition:all .15s; white-space:nowrap; }
+.stab:hover { color:#1677ff; }
+.stab.active { color:#1677ff; border-bottom-color:#1677ff; font-weight:500; }
+
+.pane { display:none; }
+.pane.on { display:block; }
+
+/* 设置 */
+.card { background:#fff; border:1px solid #e4e6eb; border-radius:4px; margin-bottom:12px; }
+.card-title { padding:12px 20px; border-bottom:1px solid #f0f0f0; font-size:14px; font-weight:500; color:#222; }
+.card-body { padding:20px; }
+.sw-banner { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; background:#f6f9ff; border:1px solid #d0e4ff; border-radius:4px; padding:14px 18px; margin-bottom:14px; }
+.sw-banner h4 { font-size:14px; color:#222; margin-bottom:4px; }
+.sw-banner p { font-size:12px; color:#888; line-height:1.7; }
+.sw-wrap { display:flex; align-items:center; gap:8px; flex-shrink:0; margin-top:2px; }
+.sw { width:38px; height:20px; border-radius:10px; background:#bbb; position:relative; cursor:pointer; transition:background .2s; flex-shrink:0; }
+.sw.on { background:#1677ff; }
+.sw::after { content:''; width:16px; height:16px; border-radius:50%; background:#fff; position:absolute; top:2px; left:2px; transition:left .2s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+.sw.on::after { left:20px; }
+.sw-lbl { font-size:13px; color:#1677ff; font-weight:500; }
+.sw-lbl.off { color:#aaa; font-weight:400; }
+.frow { display:flex; gap:16px; margin-bottom:14px; }
+.frow:last-child { margin-bottom:0; }
+.fcol { flex:1; min-width:0; }
+.fcol label { display:block; font-size:13px; color:#555; margin-bottom:5px; }
+.fcol input, .fcol select, .fcol textarea { width:100%; height:32px; padding:0 10px; border:1px solid #d9d9d9; border-radius:4px; font-size:13px; color:#333; outline:none; background:#fff; font-family:inherit; transition:border-color .15s; }
+.fcol input:focus, .fcol select:focus { border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.1); }
+.fcol textarea { height:80px; padding:8px 10px; resize:vertical; line-height:1.6; }
+.fcol textarea:focus { border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.1); }
+.setrow { display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-top:1px solid #f5f5f5; }
+.setrow:first-child { border-top:none; }
+.setrow .sr-t { font-size:13px; color:#333; margin-bottom:2px; }
+.setrow .sr-d { font-size:12px; color:#999; margin-top:1px; }
+.setrow .sr-r { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.alink { color:#1677ff; cursor:pointer; font-size:13px; text-decoration:none; }
+.alink:hover { color:#4096ff; }
+
+/* 消息管理 */
+.fbar { background:#fff; border:1px solid #e4e6eb; border-radius:4px; padding:14px 20px; margin-bottom:10px; }
+.fbar-row { display:flex; align-items:center; flex-wrap:wrap; gap:10px 20px; margin-bottom:10px; }
+.fbar-row:last-child { margin-bottom:0; }
+.fi { display:flex; align-items:center; gap:6px; }
+.fi label { font-size:13px; color:#555; white-space:nowrap; }
+.fi input, .fi select { height:30px; padding:0 9px; border:1px solid #d9d9d9; border-radius:4px; font-size:13px; color:#333; outline:none; background:#fff; font-family:inherit; }
+.fi input:focus, .fi select:focus { border-color:#1677ff; }
+.fi-sep { color:#ccc; }
+.lnk-reset { color:#1677ff; font-size:13px; cursor:pointer; background:none; border:none; padding:0; }
+.opbar { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.opbar .sel-tip { font-size:13px; color:#999; margin-left:6px; }
+.opbar .sel-cnt { color:#1677ff; }
+.opbar .right { margin-left:auto; display:flex; align-items:center; gap:6px; }
+.twrap { background:#fff; border:1px solid #e4e6eb; border-radius:4px; overflow:hidden; }
+table { width:100%; border-collapse:collapse; }
+table thead tr { background:#fafafa; }
+table th { padding:10px 16px; text-align:left; font-size:13px; font-weight:500; color:#666; border-bottom:1px solid #e4e6eb; white-space:nowrap; }
+table td { padding:12px 16px; font-size:13px; color:#333; border-bottom:1px solid #f3f3f3; vertical-align:middle; }
+table tr:last-child td { border-bottom:none; }
+table tr:hover td { background:#fafcff; }
+.ucell { display:flex; align-items:center; gap:8px; }
+.uav { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:500; flex-shrink:0; }
+.uname { color:#1677ff; cursor:pointer; }
+.s-show { color:#52c41a; font-size:13px; }
+.s-show::before { content:'● '; font-size:10px; }
+.s-hide { color:#bbb; font-size:13px; }
+.s-hide::before { content:'● '; font-size:10px; }
+.s-back { color:#ff4d4f; font-size:13px; }
+.s-back::before { content:'● '; font-size:10px; }
+.al { color:#1677ff; cursor:pointer; font-size:13px; margin-right:10px; }
+.al:hover { color:#4096ff; }
+.aw { color:#fa8c16; cursor:pointer; font-size:13px; margin-right:10px; }
+.ad { color:#ff4d4f; cursor:pointer; font-size:13px; }
+.pgbar { display:flex; align-items:center; justify-content:flex-end; gap:5px; padding:11px 16px; border-top:1px solid #f0f0f0; font-size:13px; color:#666; }
+.pgb { min-width:28px; height:28px; border:1px solid #d9d9d9; border-radius:4px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; color:#555; cursor:pointer; padding:0 6px; }
+.pgb:hover { border-color:#1677ff; color:#1677ff; }
+.pgb.on { background:#1677ff; color:#fff; border-color:#1677ff; }
+.pgsel { height:28px; padding:0 6px; border:1px solid #d9d9d9; border-radius:4px; font-size:13px; color:#333; outline:none; }
+.pginp { width:40px; height:28px; padding:0 6px; border:1px solid #d9d9d9; border-radius:4px; font-size:13px; text-align:center; outline:none; }
+
+/* 违禁词弹窗 */
+.overlay { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.4); }
+.overlay.show { display:flex; align-items:center; justify-content:center; }
+.modal { background:#fff; border-radius:6px; overflow:hidden; box-shadow:0 6px 24px rgba(0,0,0,.15); display:flex; flex-direction:column; width:780px; max-height:80vh; }
+.modal-head { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid #eee; flex-shrink:0; }
+.modal-head h3 { font-size:15px; font-weight:500; color:#222; }
+.mclose { font-size:18px; color:#bbb; cursor:pointer; line-height:1; }
+.mclose:hover { color:#555; }
+.ftabs { display:flex; border-bottom:1px solid #eee; padding:0 20px; flex-shrink:0; }
+.ftab { padding:11px 0; margin-right:24px; font-size:14px; color:#666; cursor:pointer; border-bottom:2px solid transparent; transition:all .15s; }
+.ftab:hover { color:#1677ff; }
+.ftab.on { color:#1677ff; border-bottom-color:#1677ff; font-weight:500; }
+.fpane { display:none; padding:16px 20px; overflow-y:auto; }
+.fpane.on { display:block; }
+.tip-info { background:#e6f4ff; border:1px solid #91caff; border-radius:4px; padding:9px 14px; font-size:13px; color:#0958d9; margin-bottom:14px; }
+.ftoolbar { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.ftoolbar .ml { margin-left:auto; display:flex; gap:6px; }
+.ftoolbar input[type="text"] { height:30px; padding:0 9px; border:1px solid #d9d9d9; border-radius:4px; font-size:13px; outline:none; }
+.ftoolbar input[type="text"]:focus { border-color:#1677ff; }
+
+/* 添加弹窗 */
+.add-overlay { display:none; position:fixed; inset:0; z-index:1100; background:rgba(0,0,0,.4); }
+.add-overlay.show { display:flex; align-items:center; justify-content:center; }
+.add-box { background:#fff; border-radius:6px; width:420px; overflow:hidden; box-shadow:0 6px 24px rgba(0,0,0,.15); }
+.add-head { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid #eee; }
+.add-body { padding:20px; }
+.field-row { margin-bottom:16px; }
+.field-row label { display:flex; align-items:center; gap:5px; font-size:13px; color:#555; margin-bottom:6px; }
+.tip-icon { width:15px; height:15px; border-radius:50%; background:#e0e0e0; color:#888; font-size:10px; display:inline-flex; align-items:center; justify-content:center; cursor:help; }
+.input-wrap { position:relative; }
+.input-wrap input { width:100%; height:32px; padding:0 44px 0 10px; border:1px solid #d9d9d9; border-radius:4px; font-size:13px; outline:none; font-family:inherit; transition:border-color .15s; }
+.input-wrap input:focus { border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.1); }
+.input-wrap .cnt { position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:12px; color:#bbb; pointer-events:none; }
+.add-foot { display:flex; justify-content:flex-end; gap:8px; padding-top:4px; }
+</style>
+</head>
+<body>
+
+<!-- 顶部 -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">现</div>
+    <div class="brand-name">现网蓝悦2号【7978...】</div>
+  </div>
+  <nav class="top-nav">
+    <a href="#">工作台</a>
+    <a href="#" class="active">课程</a>
+    <a href="#">直播</a>
+    <a href="#">商城</a>
+    <a href="#">SCRM</a>
+    <a href="#">交易</a>
+    <a href="#">用户</a>
+    <a href="#">数据</a>
+    <a href="#">设置</a>
+    <a href="#">AI 应用</a>
+  </nav>
+  <div class="top-right">
+    <div class="ai-btn">有问题，找AI管家</div>
+    <div class="u-av">王</div>
+  </div>
+</div>
+
+<!-- 左侧一级 -->
+<div class="sl">
+  <div class="sl-group"><span>圈子</span><span>∧</span></div>
+  <a class="sl-item active">圈子管理</a>
+  <a class="sl-item">品牌小程序</a>
+  <a class="sl-item">圈子App</a>
+  <a class="sl-item">圈子设置</a>
+  <div class="sl-div"></div>
+  <div class="sl-group"><span>互动管理</span><span>∧</span></div>
+  <a class="sl-item">打卡</a>
+  <a class="sl-item">刷题本<span class="rdot"></span></a>
+  <a class="sl-item">考试</a>
+  <a class="sl-item">练习</a>
+  <a class="sl-item">作业本</a>
+  <a class="sl-item">题库</a>
+  <a class="sl-item">证书</a>
+  <div class="sl-div"></div>
+  <a class="sl-item">日历打卡</a>
+  <a class="sl-item">商品橱窗</a>
+  <a class="sl-item">问答</a>
+  <a class="sl-item">AI助理</a>
+  <div class="sl-div"></div>
+  <div style="padding:8px 16px;font-size:13px;color:#1677ff;cursor:pointer;display:flex;align-items:center;gap:4px;">知识付费 <span style="color:#aaa;font-size:11px;">∨</span></div>
+</div>
+
+<!-- 左侧二级 -->
+<div class="sr">
+  <a class="sr-item">动态</a>
+  <a class="sr-item">课程<span class="bdot"></span></a>
+  <a class="sr-item">小组</a>
+  <a class="sr-item">激励</a>
+  <a class="sr-item">成员</a>
+  <a class="sr-item">数据</a>
+  <a class="sr-item">设置</a>
+  <div class="sr-div"></div>
+  <a class="sr-item">日历打卡</a>
+  <a class="sr-item">商品橱窗</a>
+  <a class="sr-item">问答</a>
+  <a class="sr-item">AI助理</a>
+  <div class="sr-div"></div>
+  <a class="sr-item active">群聊<span class="bnew">新</span></a>
+</div>
+
+<!-- 主内容 -->
+<div class="main">
+  <div class="bc" id="bc">
+    <a href="#">圈子管理</a>
+    <span class="sep">›</span>
+    <span class="cur">详情</span>
+  </div>
+
+  <div class="ch">
+    <div class="ch-cover"></div>
+    <div class="ch-info">
+      <h2>吴晓波的圈子</h2>
+      <div class="meta">
+        <span>动态数：1.79万条</span>
+        <span>成员数：7.53万人</span>
+        <span>¥0.01~10</span>
+        <span class="online">已上架</span>
+      </div>
+    </div>
+    <div class="ch-acts">
+      <button class="btn">分享</button>
+      <button class="btn">编辑</button>
+      <button class="btn">转移圈主</button>
+      <button class="btn btn-d">删除</button>
+    </div>
+  </div>
+
+  <!-- ══ 第一层：群聊列表 ══ -->
+  <div id="view-list">
+    <div class="body">
+      <div class="list-header">
+        <h3>群聊列表</h3>
+        <button class="btn btn-p" onclick="goCreate()">新建群聊</button>
+      </div>
+
+      <div class="group-list">
+
+        <!-- 群聊卡片1 -->
+        <div class="group-card">
+          <div class="group-card-icon" style="background:#e8f0fe;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1677ff" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="group-card-info">
+            <div class="gname">
+              吴晓波·读者交流群
+              
+              <span class="group-status-on">已开启</span>
+            </div>
+            <div class="gmeta">
+              <span>1.2万人</span>
+              <span>交流群</span>
+              <span>创建时间：2026-01-01</span>
+            </div>
+          </div>
+          <div class="group-card-acts">
+            <button class="btn btn-p" onclick="goDetail('吴晓波·读者交流群')">群聊设置</button>
+            <button class="btn" onclick="goDetail('吴晓波·读者交流群', 'messages')">消息管理</button>
+          </div>
+        </div>
+
+        <!-- 群聊卡片2 -->
+        <div class="group-card">
+          <div class="group-card-icon" style="background:#fff7e6;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d46b08" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="group-card-info">
+            <div class="gname">
+              VIP深度研讨群
+              
+              <span class="group-status-on">已开启</span>
+            </div>
+            <div class="gmeta">
+              <span>486人</span>
+              <span>交流群</span>
+              <span>创建时间：2026-02-15</span>
+            </div>
+          </div>
+          <div class="group-card-acts">
+            <button class="btn btn-p" onclick="goDetail('VIP深度研讨群')">群聊设置</button>
+            <button class="btn" onclick="goDetail('VIP深度研讨群', 'messages')">消息管理</button>
+          </div>
+        </div>
+
+        <!-- 群聊卡片3 -->
+        <div class="group-card">
+          <div class="group-card-icon" style="background:#f5f5f5;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="group-card-info">
+            <div class="gname">
+              每日策略·广播群
+              
+              <span class="group-status-off">已关闭</span>
+            </div>
+            <div class="gmeta">
+              <span>3,241人</span>
+              <span>广播群</span>
+              <span>创建时间：2026-03-10</span>
+            </div>
+          </div>
+          <div class="group-card-acts">
+            <button class="btn btn-p" onclick="goDetail('每日策略·广播群')">群聊设置</button>
+            <button class="btn" onclick="goDetail('每日策略·广播群', 'messages')">消息管理</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 第二层：群聊详情 ══ -->
+  <div id="view-detail" style="display:none;">
+
+    <div class="subtabs">
+      <div class="stab active" id="stab-settings" onclick="switchSub('settings',this)">群聊设置</div>
+      <div class="stab" id="stab-messages" onclick="switchSub('messages',this)">消息管理</div>
+    </div>
+
+    <!-- 群聊设置 -->
+    <div id="p-settings" class="pane on body">
+      <div class="sw-banner">
+        <div>
+          <h4>开启群聊功能</h4>
+          <p>开启后，圈子页面展示「群聊」入口，成员可加入与圈主互动交流。<br>关闭后入口隐藏，历史消息完整保留。</p>
+        </div>
+        <div class="sw-wrap">
+          <div class="sw on" id="sw-main" onclick="toggleSw(this,'swlbl-main')"></div>
+          <span class="sw-lbl" id="swlbl-main">已开启</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">基础设置</div>
+        <div class="card-body">
+          <div class="frow">
+            <div class="fcol" style="max-width:340px;">
+              <label>群名称</label>
+              <input type="text" id="group-name-input" value="吴晓波·读者交流群">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fcol">
+              <label>群公告</label>
+              <textarea>【入群须知】本群为吴晓波读者交流群，分享商业洞察与读书心得，请文明交流，严禁广告。</textarea>
+            </div>
+          </div>
+          <div class="frow" style="margin-bottom:0;">
+            <div class="fcol">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <label style="margin-bottom:0;">入群欢迎语</label>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:12px;color:#999;">开启后新成员加入时自动收到此消息</span>
+                  <div class="sw on" onclick="toggleWelcome(this)"></div>
+                </div>
+              </div>
+              <textarea id="welcome-msg" placeholder="请输入欢迎语，如：欢迎加入吴晓波读者交流群！这里是我们的知识交流阵地，有任何问题欢迎随时提问。">欢迎加入吴晓波读者交流群！这里是我们的知识交流阵地，圈主和助理会定期分享商业洞察，有任何问题欢迎随时提问。</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">入群设置</div>
+        <div class="card-body">
+          <div class="frow">
+            <div class="fcol" style="max-width:280px;">
+              <label>人数上限</label>
+              <div style="height:32px;padding:0 10px;border:1px solid #f0f0f0;border-radius:4px;background:#fafafa;font-size:13px;color:#888;display:flex;align-items:center;">500人（创建后不可修改）</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">内容管控</div>
+        <div class="card-body">
+          <div class="setrow" style="border-top:none;">
+            <div>
+              <div class="sr-t">全员禁言</div>
+              <div class="sr-d">开启后仅圈主和助理可发言，适合广播通知场景</div>
+            </div>
+            <div class="sr-r">
+              <div class="sw" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="setrow">
+            <div>
+              <div class="sr-t">违禁词过滤</div>
+              <div class="sr-d">触发违禁词的消息自动撤回，平台默认规则 + 自定义关键词</div>
+            </div>
+            <div class="sr-r">
+              <a class="alink" onclick="openForbid()">管理违禁词</a>
+              <div class="sw on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="setrow">
+            <div>
+              <div class="sr-t">消息撤回时限</div>
+              <div class="sr-d">成员发送消息后可撤回的时间范围</div>
+            </div>
+            <div class="sr-r">
+              <select style="height:30px;padding:0 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;outline:none;width:148px;">
+                <option>2分钟内可撤回</option>
+                <option>5分钟内可撤回</option>
+                <option>不可撤回</option>
+              </select>
+            </div>
+          </div>
+          <div class="setrow">
+            <div>
+              <div class="sr-t">新成员查看历史消息</div>
+              <div class="sr-d">开启后新成员进群可查看入群前的历史聊天记录</div>
+            </div>
+            <div class="sr-r">
+              <div class="sw" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-p" onclick="saveSettings()">保存设置</button>
+        <button class="btn">重置</button>
+      </div>
+    </div>
+
+
+    <!-- 消息管理 -->
+    <div id="p-messages" class="pane body">
+      <div class="fbar">
+        <div class="fbar-row">
+          <div class="fi">
+            <label>关键词：</label>
+            <select style="width:90px;"><option>消息内容</option><option>用户昵称</option></select>
+            <input type="text" placeholder="请输入内容" style="width:160px;">
+          </div>
+          <div class="fi">
+            <label>状态：</label>
+            <select style="width:90px;"><option>全部</option><option>显示</option><option>已撤回</option><option>已隐藏</option></select>
+          </div>
+          <div class="fi">
+            <label>发送时间：</label>
+            <input type="text" placeholder="开始日期" style="width:94px;">
+            <span class="fi-sep">至</span>
+            <input type="text" placeholder="结束日期" style="width:94px;">
+          </div>
+        </div>
+        <div class="fbar-row">
+          <button class="btn btn-p" style="padding:5px 16px;">筛选</button>
+          <button class="btn" style="padding:5px 12px;">导出列表</button>
+          <button class="lnk-reset">重置筛选条件</button>
+        </div>
+      </div>
+
+      <div class="opbar">
+        <input type="checkbox" style="width:14px;height:14px;cursor:pointer;">
+        <button class="btn" style="padding:4px 12px;">当页全选</button>
+        <button class="btn" style="padding:4px 12px;">批量撤回</button>
+        <button class="btn" style="padding:4px 12px;">批量隐藏</button>
+        <span class="sel-tip">已选 <span class="sel-cnt">0</span> 条（最多同时批量操作100条）</span>
+        <div class="right">
+          <select style="height:30px;padding:0 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;outline:none;"><option>全部</option><option>显示</option><option>已撤回</option><option>已隐藏</option></select>
+          <select style="height:30px;padding:0 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;outline:none;"><option>消息内容</option><option>用户昵称</option></select>
+          <input type="text" placeholder="请输入消息内容" style="height:30px;padding:0 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;width:180px;outline:none;">
+        </div>
+      </div>
+
+      <div class="twrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:36px;"><input type="checkbox"></th>
+              <th style="width:150px;">用户名称</th>
+              <th>消息内容</th>
+              <th style="width:90px;">状态</th>
+              <th style="width:170px;">发送时间</th>
+              <th style="width:130px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td><div class="ucell"><div class="uav" style="background:#e8f5e9;color:#388e3c;">追</div><span class="uname">追梦人儿</span></div></td>
+              <td>今天的分享真的太有价值了，学到了很多！</td>
+              <td><span class="s-show">显示</span></td>
+              <td style="color:#999;">2026-05-06 20:40:49</td>
+              <td><span class="al">撤回</span><span class="aw">禁言</span><span class="ad">屏蔽</span></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td><div class="ucell"><div class="uav" style="background:#e8f5e9;color:#388e3c;">追</div><span class="uname">追梦人儿</span></div></td>
+              <td>吴老师，请问新能源板块现在适合建仓吗？</td>
+              <td><span class="s-show">显示</span></td>
+              <td style="color:#999;">2026-05-06 20:23:32</td>
+              <td><span class="al">撤回</span><span class="aw">禁言</span><span class="ad">屏蔽</span></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td><div class="ucell"><div class="uav" style="background:#fff3e0;color:#e65100;">财</div><span class="uname">财富自由</span></div></td>
+              <td>感谢老师，受益匪浅！</td>
+              <td><span class="s-show">显示</span></td>
+              <td style="color:#999;">2026-05-06 20:23:28</td>
+              <td><span class="al">撤回</span><span class="aw">禁言</span><span class="ad">屏蔽</span></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td><div class="ucell"><div class="uav" style="background:#e3f2fd;color:#1565c0;">读</div><span class="uname">读书人</span></div></td>
+              <td style="color:#bbb;">此消息含违规内容，已由平台自动撤回</td>
+              <td><span class="s-back">已撤回</span></td>
+              <td style="color:#999;">2026-05-06 20:23:21</td>
+              <td><span class="al">恢复显示</span><span class="aw">禁言</span><span class="ad">屏蔽</span></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td><div class="ucell"><div class="uav" style="background:#f3e5f5;color:#6a1b9a;">商</div><span class="uname">商业观察</span></div></td>
+              <td style="color:#bbb;">[图片]</td>
+              <td><span class="s-hide">已隐藏</span></td>
+              <td style="color:#999;">2026-05-06 20:23:00</td>
+              <td><span class="al">显示</span><span class="aw">禁言</span><span class="ad">屏蔽</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pgbar">
+          <span style="margin-right:auto;color:#999;">已选 <span style="color:#1677ff;">0</span> 条</span>
+          <span style="color:#999;">共5条，每页</span>
+          <select class="pgsel"><option>10 条</option><option>20 条</option></select>
+          <div class="pgb">‹</div>
+          <div class="pgb on">1</div>
+          <div class="pgb">›</div>
+          <span style="color:#999;">跳至</span>
+          <input class="pginp" type="text">
+          <span style="color:#999;">页</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- 违禁词弹窗 -->
+<div class="overlay" id="forbid-overlay" onclick="if(event.target===this)closeForbid()">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>违禁词管理</h3>
+      <span class="mclose" onclick="closeForbid()">×</span>
+    </div>
+    <div class="ftabs">
+      <div class="ftab on" id="ft-user" onclick="switchFTab('user')">用户违禁词</div>
+      <div class="ftab" id="ft-op" onclick="switchFTab('op')">运营人员违禁词</div>
+    </div>
+    <div class="fpane on" id="fp-user">
+      <div class="tip-info">设置违禁词默认只对群聊用户发言内容生效</div>
+      <div class="ftoolbar">
+        <button class="btn btn-p" style="padding:5px 14px;" onclick="openAdd('用户违禁词')">添加</button>
+        <button class="btn" style="padding:5px 12px;">批量添加</button>
+        <a class="alink" style="font-size:13px;">下载模板</a>
+        <div class="ml">
+          <input type="text" placeholder="违禁词" style="width:148px;">
+          <button class="btn" style="padding:5px 14px;">搜索</button>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:#fafafa;">
+          <th style="padding:9px 16px;text-align:left;font-weight:500;color:#666;border-bottom:1px solid #eee;">违禁词</th>
+          <th style="padding:9px 16px;text-align:left;font-weight:500;color:#666;border-bottom:1px solid #eee;width:120px;">操作</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">荐股</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('用户违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">保本</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('用户违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">稳赚</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('用户违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">内部消息</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('用户违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;">广告</td><td style="padding:10px 16px;"><span class="al" onclick="openAdd('用户违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;padding:10px 0;font-size:13px;color:#666;">
+        共21条，每页 <select class="pgsel"><option>10 条</option></select>
+        <div class="pgb">‹</div><div class="pgb on">1</div><div class="pgb">2</div><div class="pgb">›</div>
+        跳至 <input class="pginp" type="text"> 页
+      </div>
+    </div>
+    <div class="fpane" id="fp-op">
+      <div class="tip-info">设置违禁词默认只对运营人员发言内容有效</div>
+      <div class="ftoolbar">
+        <button class="btn btn-p" style="padding:5px 14px;" onclick="openAdd('运营人员违禁词')">添加</button>
+        <button class="btn" style="padding:5px 12px;">批量添加</button>
+        <a class="alink" style="font-size:13px;">下载模板</a>
+        <div class="ml">
+          <input type="text" placeholder="搜索运营人员违禁词" style="width:180px;">
+          <button class="btn" style="padding:5px 14px;">搜索</button>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:#fafafa;">
+          <th style="padding:9px 16px;text-align:left;font-weight:500;color:#666;border-bottom:1px solid #eee;">运营人员违禁词</th>
+          <th style="padding:9px 16px;text-align:left;font-weight:500;color:#666;border-bottom:1px solid #eee;width:130px;">操作</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">承诺收益</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('运营人员违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">必涨</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('运营人员违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">稳赚不赔</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('运营人员违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;">内幕</td><td style="padding:10px 16px;"><span class="al" onclick="openAdd('运营人员违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;padding:10px 0;font-size:13px;color:#666;">
+        共9条，每页 <select class="pgsel"><option>10 条</option></select>
+        <div class="pgb on">1</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 添加/编辑弹窗 -->
+<div class="add-overlay" id="add-overlay">
+  <div class="add-box">
+    <div class="add-head">
+      <span id="add-title" style="font-size:15px;font-weight:500;color:#222;">添加违禁词</span>
+      <span class="mclose" onclick="closeAdd()">×</span>
+    </div>
+    <div class="add-body">
+      <div class="field-row">
+        <label>
+          <span id="add-label">违禁词</span>
+          <span class="tip-icon" title="请输入单个违禁词，输入多个词语将识别成一个违禁词">?</span>
+        </label>
+        <div class="input-wrap">
+          <input type="text" id="add-input" placeholder="请输入单个违禁词，输入多个词语将识别成一个违禁词" maxlength="20"
+            oninput="document.getElementById('add-cnt').textContent=this.value.length+'/20'">
+          <span class="cnt" id="add-cnt">0/20</span>
+        </div>
+      </div>
+      <div class="add-foot">
+        <button class="btn" onclick="closeAdd()">取消</button>
+        <button class="btn btn-p" onclick="closeAdd()">确认</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 进入群聊详情 ──
+function goDetail(groupName, tab) {
+  window._currentGroup = groupName;
+  document.getElementById('view-list').style.display = 'none';
+  document.getElementById('view-detail').style.display = 'block';
+  // 面包屑
+  document.getElementById('bc').innerHTML =
+    '<a href="#" onclick="goList()">圈子管理</a>' +
+    '<span class="sep">›</span>' +
+    '<a href="#" onclick="goList()">详情</a>' +
+    '<span class="sep">›</span>' +
+    '<span class="sep">群聊</span>' +
+    '<span class="sep">›</span>' +
+    '<span class="cur">' + groupName + '</span>';
+  // 群名称填入
+  document.getElementById('group-name-input').value = groupName;
+  // 切换到指定tab
+  if (tab === 'messages') {
+    switchSub('messages', document.getElementById('stab-messages'));
+  } else {
+    switchSub('settings', document.getElementById('stab-settings'));
+  }
+}
+
+// ── 欢迎语开关 ──
+function toggleWelcome(sw) {
+  sw.classList.toggle('on');
+  const on = sw.classList.contains('on');
+  // 找最近的textarea
+  const ta = sw.closest('.frow').querySelector('textarea');
+  if (ta) {
+    ta.disabled = !on;
+    ta.style.color = on ? '#333' : '#bbb';
+    ta.style.background = on ? '#fff' : '#fafafa';
+  }
+}
+
+// ── 创建群聊（提交并加入列表）──
+function createGroup() {
+  const name = document.getElementById('new-group-name').value.trim();
+  if (!name) {
+    alert('请填写群名称');
+    return;
+  }
+  // 新增一行到表格
+  const tbody = document.getElementById('group-tbody');
+  const today = new Date().toISOString().slice(0,10);
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="checkbox"></td>
+    <td><span class="uname" onclick="goDetail('${name}')">${name}</span></td>
+    <td style="color:#555;">0</td>
+    <td><span class="group-status-on">已开启</span></td>
+    <td style="color:#999;">${today}</td>
+    <td>
+      <span class="al" onclick="goDetail('${name}')">群聊设置</span>
+      <span class="al" onclick="goDetail('${name}','messages')">消息管理</span>
+    </td>
+  `;
+  tbody.appendChild(tr);
+  // 清空表单
+  document.getElementById('new-group-name').value = '';
+  document.getElementById('new-group-notice').value = '';
+  // 返回列表
+  goList();
+}
+
+// ── 新建群聊 ──
+function goCreate() {
+  document.getElementById('view-list').style.display = 'none';
+  document.getElementById('view-detail').style.display = 'none';
+  document.getElementById('view-create').style.display = 'block';
+  document.getElementById('bc').innerHTML =
+    '<a href="#" onclick="goList()">圈子管理</a>' +
+    '<span class="sep">›</span>' +
+    '<a href="#" onclick="goList()">详情</a>' +
+    '<span class="sep">›</span>' +
+    '<span class="sep">群聊</span>' +
+    '<span class="sep">›</span>' +
+    '<span class="cur">新建群聊</span>';
+}
+
+// ── 返回列表 ──
+function goList() {
+  document.getElementById('view-list').style.display = 'block';
+  document.getElementById('view-detail').style.display = 'none';
+  document.getElementById('view-create').style.display = 'none';
+  document.getElementById('bc').innerHTML =
+    '<a href="#">圈子管理</a>' +
+    '<span class="sep">›</span>' +
+    '<span class="cur">详情</span>';
+}
+
+// ── 子Tab切换 ──
+function switchSub(name, el) {
+  document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+  el.classList.add('active');
+  document.getElementById('p-' + name).classList.add('on');
+}
+
+// ── 保存设置（更新列表卡片状态并返回）──
+function saveSettings() {
+  const swEl = document.getElementById('sw-main');
+  const isOn = swEl ? swEl.classList.contains('on') : true;
+  const groupName = window._currentGroup;
+  // 找到对应的群卡片，更新状态
+  // 找到表格里对应行，更新状态列
+  const rows = document.querySelectorAll('#group-tbody tr');
+  rows.forEach(row => {
+    const nameCell = row.querySelector('td:nth-child(2) .uname');
+    if (nameCell && nameCell.textContent.trim() === groupName) {
+      const statusCell = row.querySelector('td:nth-child(4)');
+      if (statusCell) {
+        statusCell.innerHTML = isOn
+          ? '<span class="group-status-on">已开启</span>'
+          : '<span class="group-status-off">已关闭</span>';
+      }
+    }
+  });
+  goList();
+}
+
+// ── 开关 ──
+function toggleSw(sw, lblId) {
+  sw.classList.toggle('on');
+  const on = sw.classList.contains('on');
+  const lbl = document.getElementById(lblId);
+  lbl.textContent = on ? '已开启' : '已关闭';
+  lbl.className = on ? 'sw-lbl' : 'sw-lbl off';
+}
+
+// ── 违禁词弹窗 ──
+function openForbid() { document.getElementById('forbid-overlay').classList.add('show'); }
+function closeForbid() { document.getElementById('forbid-overlay').classList.remove('show'); }
+function switchFTab(name) {
+  ['user','op'].forEach(t => {
+    document.getElementById('ft-'+t).classList.toggle('on', t===name);
+    document.getElementById('fp-'+t).classList.toggle('on', t===name);
+  });
+}
+
+// ── 添加/编辑弹窗 ──
+function openAdd(type, el) {
+  const isEdit = !!el;
+  const val = isEdit ? el.closest('tr').querySelector('td').textContent.trim() : '';
+  document.getElementById('add-title').textContent = (isEdit ? '编辑' : '添加') + type;
+  document.getElementById('add-label').textContent = type;
+  const inp = document.getElementById('add-input');
+  inp.value = val;
+  document.getElementById('add-cnt').textContent = val.length + '/20';
+  document.getElementById('add-overlay').classList.add('show');
+  setTimeout(() => inp.focus(), 80);
+}
+function closeAdd() { document.getElementById('add-overlay').classList.remove('show'); }
+</script>
+</body>
+</html>
+  <!-- ══ 第三层：新建群聊 ══ -->
+  <div id="view-create" style="display:none;margin-left:244px;margin-top:48px;">
+    <div class="body">
+      <div class="card">
+        <div class="card-title">基础信息</div>
+        <div class="card-body">
+          <div class="frow">
+            <div class="fcol" style="max-width:400px;">
+              <label>群名称 <span style="color:#ff4d4f;">*</span></label>
+              <input type="text" id="new-group-name" placeholder="请输入群名称，如：吴晓波·读者交流群">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fcol">
+              <label>群公告</label>
+              <textarea id="new-group-notice" placeholder="请输入群公告，成员进群时可见..."></textarea>
+            </div>
+          </div>
+          <div class="frow" style="margin-bottom:0;">
+            <div class="fcol">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <label style="margin-bottom:0;">入群欢迎语</label>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:12px;color:#999;">开启后新成员加入时自动收到此消息</span>
+                  <div class="sw" onclick="toggleWelcome(this)"></div>
+                </div>
+              </div>
+              <textarea id="new-welcome-msg" placeholder="请输入欢迎语，如：欢迎加入XX群！..." style="color:#bbb;" disabled></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">入群设置</div>
+        <div class="card-body">
+          <div class="frow">
+            <div class="fcol" style="max-width:280px;">
+              <label>人数上限 <span style="color:#ff4d4f;">*</span></label>
+              <select>
+                <option>200人</option>
+                <option selected>500人</option>
+                <option>1000人</option>
+                <option>2000人</option>
+              </select>
+            </div>
+            <div class="fcol" style="max-width:400px;padding-top:28px;">
+              <span style="font-size:12px;color:#aaa;">创建后不可修改，请根据群聊规模提前规划</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">功能设置</div>
+        <div class="card-body">
+          <div class="setrow" style="border-top:none;">
+            <div>
+              <div class="sr-t">开启群聊</div>
+              <div class="sr-d">创建后是否立即对圈子成员展示群聊入口</div>
+            </div>
+            <div class="sr-r">
+              <div class="sw on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="setrow">
+            <div>
+              <div class="sr-t">全员禁言</div>
+              <div class="sr-d">开启后仅圈主和助理可发言，适合广播通知场景</div>
+            </div>
+            <div class="sr-r">
+              <div class="sw" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="setrow">
+            <div>
+              <div class="sr-t">违禁词过滤</div>
+              <div class="sr-d">触发违禁词的消息自动撤回，沿用圈子违禁词设置</div>
+            </div>
+            <div class="sr-r">
+              <div class="sw on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="setrow">
+            <div>
+              <div class="sr-t">消息撤回时限</div>
+              <div class="sr-d">成员发送消息后可撤回的时间范围</div>
+            </div>
+            <div class="sr-r">
+              <select style="height:30px;padding:0 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;outline:none;width:148px;">
+                <option>2分钟内可撤回</option>
+                <option>5分钟内可撤回</option>
+                <option>不可撤回</option>
+              </select>
+            </div>
+          </div>
+          <div class="setrow">
+            <div>
+              <div class="sr-t">新成员查看历史消息</div>
+              <div class="sr-d">开启后新成员进群可查看入群前的历史聊天记录</div>
+            </div>
+            <div class="sr-r">
+              <div class="sw" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-p" onclick="createGroup()">创建群聊</button>
+        <button class="btn" onclick="goList()">取消</button>
+      </div>
+    </div>
+  </div>
+
+
+
+<!-- 违禁词弹窗 -->
+<div class="overlay" id="forbid-overlay" onclick="if(event.target===this)closeForbid()">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>违禁词管理</h3>
+      <span class="mclose" onclick="closeForbid()">×</span>
+    </div>
+    <div class="ftabs">
+      <div class="ftab on" id="ft-user" onclick="switchFTab('user')">用户违禁词</div>
+      <div class="ftab" id="ft-op" onclick="switchFTab('op')">运营人员违禁词</div>
+    </div>
+    <div class="fpane on" id="fp-user">
+      <div class="tip-info">设置违禁词默认只对群聊用户发言内容生效</div>
+      <div class="ftoolbar">
+        <button class="btn btn-p" style="padding:5px 14px;" onclick="openAdd('用户违禁词')">添加</button>
+        <button class="btn" style="padding:5px 12px;">批量添加</button>
+        <a class="alink" style="font-size:13px;">下载模板</a>
+        <div class="ml">
+          <input type="text" placeholder="违禁词" style="width:148px;">
+          <button class="btn" style="padding:5px 14px;">搜索</button>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:#fafafa;">
+          <th style="padding:9px 16px;text-align:left;font-weight:500;color:#666;border-bottom:1px solid #eee;">违禁词</th>
+          <th style="padding:9px 16px;text-align:left;font-weight:500;color:#666;border-bottom:1px solid #eee;width:120px;">操作</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">荐股</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('用户违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">保本</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('用户违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">稳赚</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('用户违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">内部消息</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('用户违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;">广告</td><td style="padding:10px 16px;"><span class="al" onclick="openAdd('用户违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;padding:10px 0;font-size:13px;color:#666;">
+        共21条，每页 <select class="pgsel"><option>10 条</option></select>
+        <div class="pgb">‹</div><div class="pgb on">1</div><div class="pgb">2</div><div class="pgb">›</div>
+        跳至 <input class="pginp" type="text"> 页
+      </div>
+    </div>
+    <div class="fpane" id="fp-op">
+      <div class="tip-info">设置违禁词默认只对运营人员发言内容有效</div>
+      <div class="ftoolbar">
+        <button class="btn btn-p" style="padding:5px 14px;" onclick="openAdd('运营人员违禁词')">添加</button>
+        <button class="btn" style="padding:5px 12px;">批量添加</button>
+        <a class="alink" style="font-size:13px;">下载模板</a>
+        <div class="ml">
+          <input type="text" placeholder="搜索运营人员违禁词" style="width:180px;">
+          <button class="btn" style="padding:5px 14px;">搜索</button>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:#fafafa;">
+          <th style="padding:9px 16px;text-align:left;font-weight:500;color:#666;border-bottom:1px solid #eee;">运营人员违禁词</th>
+          <th style="padding:9px 16px;text-align:left;font-weight:500;color:#666;border-bottom:1px solid #eee;width:130px;">操作</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">承诺收益</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('运营人员违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">必涨</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('运营人员违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;">稳赚不赔</td><td style="padding:10px 16px;border-bottom:1px solid #f5f5f5;"><span class="al" onclick="openAdd('运营人员违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+          <tr><td style="padding:10px 16px;">内幕</td><td style="padding:10px 16px;"><span class="al" onclick="openAdd('运营人员违禁词',this)">编辑</span><span class="ad">删除</span></td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;padding:10px 0;font-size:13px;color:#666;">
+        共9条，每页 <select class="pgsel"><option>10 条</option></select>
+        <div class="pgb on">1</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 添加/编辑弹窗 -->
+<div class="add-overlay" id="add-overlay">
+  <div class="add-box">
+    <div class="add-head">
+      <span id="add-title" style="font-size:15px;font-weight:500;color:#222;">添加违禁词</span>
+      <span class="mclose" onclick="closeAdd()">×</span>
+    </div>
+    <div class="add-body">
+      <div class="field-row">
+        <label>
+          <span id="add-label">违禁词</span>
+          <span class="tip-icon" title="请输入单个违禁词，输入多个词语将识别成一个违禁词">?</span>
+        </label>
+        <div class="input-wrap">
+          <input type="text" id="add-input" placeholder="请输入单个违禁词，输入多个词语将识别成一个违禁词" maxlength="20"
+            oninput="document.getElementById('add-cnt').textContent=this.value.length+'/20'">
+          <span class="cnt" id="add-cnt">0/20</span>
+        </div>
+      </div>
+      <div class="add-foot">
+        <button class="btn" onclick="closeAdd()">取消</button>
+        <button class="btn btn-p" onclick="closeAdd()">确认</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 进入群聊详情 ──
+function goDetail(groupName, tab) {
+  document.getElementById('view-list').style.display = 'none';
+  document.getElementById('view-detail').style.display = 'block';
+  // 面包屑
+  document.getElementById('bc').innerHTML =
+    '<a href="#" onclick="goList()">圈子管理</a>' +
+    '<span class="sep">›</span>' +
+    '<a href="#" onclick="goList()">详情</a>' +
+    '<span class="sep">›</span>' +
+    '<span class="sep">群聊</span>' +
+    '<span class="sep">›</span>' +
+    '<span class="cur">' + groupName + '</span>';
+  // 群名称填入
+  document.getElementById('group-name-input').value = groupName;
+  // 切换到指定tab
+  if (tab === 'messages') {
+    switchSub('messages', document.getElementById('stab-messages'));
+  } else {
+    switchSub('settings', document.getElementById('stab-settings'));
+  }
+}
+
+// ── 新建群聊 ──
+function goCreate() {
+  document.getElementById('view-list').style.display = 'none';
+  document.getElementById('view-detail').style.display = 'none';
+  document.getElementById('view-create').style.display = 'block';
+  document.getElementById('bc').innerHTML =
+    '<a href="#" onclick="goList()">圈子管理</a>' +
+    '<span class="sep">›</span>' +
+    '<a href="#" onclick="goList()">详情</a>' +
+    '<span class="sep">›</span>' +
+    '<span class="sep">群聊</span>' +
+    '<span class="sep">›</span>' +
+    '<span class="cur">新建群聊</span>';
+}
+
+// ── 返回列表 ──
+function goList() {
+  document.getElementById('view-list').style.display = 'block';
+  document.getElementById('view-detail').style.display = 'none';
+  document.getElementById('view-create').style.display = 'none';
+  document.getElementById('bc').innerHTML =
+    '<a href="#">圈子管理</a>' +
+    '<span class="sep">›</span>' +
+    '<span class="cur">详情</span>';
+}
+
+// ── 子Tab切换 ──
+function switchSub(name, el) {
+  document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+  el.classList.add('active');
+  document.getElementById('p-' + name).classList.add('on');
+}
+
+// ── 开关 ──
+function toggleSw(sw, lblId) {
+  sw.classList.toggle('on');
+  const on = sw.classList.contains('on');
+  const lbl = document.getElementById(lblId);
+  lbl.textContent = on ? '已开启' : '已关闭';
+  lbl.className = on ? 'sw-lbl' : 'sw-lbl off';
+}
+
+// ── 违禁词弹窗 ──
+function openForbid() { document.getElementById('forbid-overlay').classList.add('show'); }
+function closeForbid() { document.getElementById('forbid-overlay').classList.remove('show'); }
+function switchFTab(name) {
+  ['user','op'].forEach(t => {
+    document.getElementById('ft-'+t).classList.toggle('on', t===name);
+    document.getElementById('fp-'+t).classList.toggle('on', t===name);
+  });
+}
+
+// ── 添加/编辑弹窗 ──
+function openAdd(type, el) {
+  const isEdit = !!el;
+  const val = isEdit ? el.closest('tr').querySelector('td').textContent.trim() : '';
+  document.getElementById('add-title').textContent = (isEdit ? '编辑' : '添加') + type;
+  document.getElementById('add-label').textContent = type;
+  const inp = document.getElementById('add-input');
+  inp.value = val;
+  document.getElementById('add-cnt').textContent = val.length + '/20';
+  document.getElementById('add-overlay').classList.add('show');
+  setTimeout(() => inp.focus(), 80);
+}
+function closeAdd() { document.getElementById('add-overlay').classList.remove('show'); }
+</script>
+</body>
+</html>
+  <!-- ══ 第三层：新建群聊 ══ -->
+  <div id="view-create" style="display:none;margin-left:244px;margin-top:48px;">
+    <div class="body">
+      <div class="card">
+        <div class="card-title">基础信息</div>
+        <div class="card-body">
+          <div class="frow">
+            <div class="fcol" style="max-width:400px;">
+              <label>群名称 <span style="color:#ff4d4f;">*</span></label>
+              <input type="text" id="new-group-name" placeholder="请输入群名称，如：吴晓波·读者交流群">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fcol" style="max-width:400px;">
+              <label>群类型 <span style="color:#ff4d4f;">*</span></label>
+              <select>
+                <option value="">请选择群类型</option>
+                <option>交流群（成员可双向发言）</option>
+                <option>广播群（仅圈主/助理发言）</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fcol">
+              <label>群公告</label>
+              <textarea id="new-group-notice" placeholder="请输入群公告，成员进群时可见..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">功能设置</div>
+        <div class="card-body">
+          <div class="setrow" style="border-top:none;">
+            <div>
+              <div class="sr-t">开启群聊</div>
+              <div class="sr-d">创建后是否立即对圈子成员展示群聊入口</div>
+            </div>
+            <div class="sr-r">
+              <div class="sw on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="setrow">
+            <div>
+              <div class="sr-t">全员禁言</div>
+              <div class="sr-d">开启后仅圈主和助理可发言，适合广播通知场景</div>
+            </div>
+            <div class="sr-r">
+              <div class="sw" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="setrow">
+            <div>
+              <div class="sr-t">违禁词过滤</div>
+              <div class="sr-d">触发违禁词的消息自动撤回，沿用圈子违禁词设置</div>
+            </div>
+            <div class="sr-r">
+              <div class="sw on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="setrow">
+            <div>
+              <div class="sr-t">消息撤回时限</div>
+              <div class="sr-d">成员发送消息后可撤回的时间范围</div>
+            </div>
+            <div class="sr-r">
+              <select style="height:30px;padding:0 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;outline:none;width:148px;">
+                <option>2分钟内可撤回</option>
+                <option>5分钟内可撤回</option>
+                <option>不可撤回</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-p" onclick="createGroup()">创建群聊</button>
+        <button class="btn" onclick="goList()">取消</button>
+      </div>
+    </div>
+  </div>
+
