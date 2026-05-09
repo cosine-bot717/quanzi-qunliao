@@ -286,7 +286,9 @@ table tr:hover td { background:#fafcff; }
   <div class="bc" id="bc">
     <a href="#">圈子管理</a>
     <span class="sep">›</span>
-    <span class="cur">详情</span>
+    <a href="#">详情</a>
+    <span class="sep">›</span>
+    <span class="cur">群聊</span>
   </div>
 
   <div class="ch">
@@ -308,91 +310,8 @@ table tr:hover td { background:#fafcff; }
     </div>
   </div>
 
-  <!-- ══ 第一层：群聊列表 ══ -->
-  <div id="view-list">
-    <div class="body">
-      <div class="list-header">
-        <h3>群聊列表</h3>
-        <button class="btn btn-p" onclick="goCreate()">新建群聊</button>
-      </div>
-
-      <div class="group-list">
-
-        <!-- 群聊卡片1 -->
-        <div class="group-card">
-          <div class="group-card-icon" style="background:#e8f0fe;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1677ff" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div class="group-card-info">
-            <div class="gname">
-              吴晓波·读者交流群
-              
-              <span class="group-status-on">已开启</span>
-            </div>
-            <div class="gmeta">
-              <span>1.2万人</span>
-              <span>交流群</span>
-              <span>创建时间：2026-01-01</span>
-            </div>
-          </div>
-          <div class="group-card-acts">
-            <button class="btn btn-p" onclick="goDetail('吴晓波·读者交流群')">群聊设置</button>
-            <button class="btn" onclick="goDetail('吴晓波·读者交流群', 'messages')">消息管理</button>
-          </div>
-        </div>
-
-        <!-- 群聊卡片2 -->
-        <div class="group-card">
-          <div class="group-card-icon" style="background:#fff7e6;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d46b08" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div class="group-card-info">
-            <div class="gname">
-              VIP深度研讨群
-              
-              <span class="group-status-on">已开启</span>
-            </div>
-            <div class="gmeta">
-              <span>486人</span>
-              <span>交流群</span>
-              <span>创建时间：2026-02-15</span>
-            </div>
-          </div>
-          <div class="group-card-acts">
-            <button class="btn btn-p" onclick="goDetail('VIP深度研讨群')">群聊设置</button>
-            <button class="btn" onclick="goDetail('VIP深度研讨群', 'messages')">消息管理</button>
-          </div>
-        </div>
-
-        <!-- 群聊卡片3 -->
-        <div class="group-card">
-          <div class="group-card-icon" style="background:#f5f5f5;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div class="group-card-info">
-            <div class="gname">
-              每日策略·广播群
-              
-              <span class="group-status-off">已关闭</span>
-            </div>
-            <div class="gmeta">
-              <span>3,241人</span>
-              <span>广播群</span>
-              <span>创建时间：2026-03-10</span>
-            </div>
-          </div>
-          <div class="group-card-acts">
-            <button class="btn btn-p" onclick="goDetail('每日策略·广播群')">群聊设置</button>
-            <button class="btn" onclick="goDetail('每日策略·广播群', 'messages')">消息管理</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
   <!-- ══ 第二层：群聊详情 ══ -->
-  <div id="view-detail" style="display:none;">
+  <div id="view-detail" style="display:block;">
 
     <div class="subtabs">
       <div class="stab active" id="stab-settings" onclick="switchSub('settings',this)">群聊设置</div>
@@ -723,26 +642,7 @@ table tr:hover td { background:#fafcff; }
 <script>
 // ── 进入群聊详情 ──
 function goDetail(groupName, tab) {
-  window._currentGroup = groupName;
-  document.getElementById('view-list').style.display = 'none';
-  document.getElementById('view-detail').style.display = 'block';
-  // 面包屑
-  document.getElementById('bc').innerHTML =
-    '<a href="#" onclick="goList()">圈子管理</a>' +
-    '<span class="sep">›</span>' +
-    '<a href="#" onclick="goList()">详情</a>' +
-    '<span class="sep">›</span>' +
-    '<span class="sep">群聊</span>' +
-    '<span class="sep">›</span>' +
-    '<span class="cur">' + groupName + '</span>';
-  // 群名称填入
-  document.getElementById('group-name-input').value = groupName;
-  // 切换到指定tab
-  if (tab === 'messages') {
-    switchSub('messages', document.getElementById('stab-messages'));
-  } else {
-    switchSub('settings', document.getElementById('stab-settings'));
-  }
+  // 保留用于兼容调用
 }
 
 // ── 欢迎语开关 ──
@@ -790,7 +690,6 @@ function createGroup() {
 
 // ── 新建群聊 ──
 function goCreate() {
-  document.getElementById('view-list').style.display = 'none';
   document.getElementById('view-detail').style.display = 'none';
   document.getElementById('view-create').style.display = 'block';
   document.getElementById('bc').innerHTML =
@@ -805,8 +704,7 @@ function goCreate() {
 
 // ── 返回列表 ──
 function goList() {
-  document.getElementById('view-list').style.display = 'block';
-  document.getElementById('view-detail').style.display = 'none';
+  document.getElementById('view-detail').style.display = 'block';
   document.getElementById('view-create').style.display = 'none';
   document.getElementById('bc').innerHTML =
     '<a href="#">圈子管理</a>' +
@@ -1136,8 +1034,7 @@ function goCreate() {
 
 // ── 返回列表 ──
 function goList() {
-  document.getElementById('view-list').style.display = 'block';
-  document.getElementById('view-detail').style.display = 'none';
+  document.getElementById('view-detail').style.display = 'block';
   document.getElementById('view-create').style.display = 'none';
   document.getElementById('bc').innerHTML =
     '<a href="#">圈子管理</a>' +
